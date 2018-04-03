@@ -1,0 +1,164 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+
+<div class="card" id="dealt"></div>
+
+<button style="width:100px;height:50px;" id="deal" type="button" value="hitme">hit me</button>
+<button style="width:100px;height:50px;" id="reset" type="button" value="hitme">reset</button>
+
+<script>
+
+// deck of cards
+
+class Deck {
+
+  constructor(){
+    this.card_array = [];
+  }
+  create_cards(){
+    let counter = 0;
+    let suite_array = ["s","d","c","h"];
+    for (let suite of suite_array){
+      let card_array = ["2","3","4","5","6","7","8","9","10","j","q","k","1"];
+      for (let num of card_array){
+        // create card with number and suite
+        let card = {
+                    suite: suite,
+                    num: num,
+                    position:counter 
+                   };
+        this.card_array.push(card);
+        counter++;
+      }
+    }
+    return this;
+  }
+
+  shuffleCards(){
+
+    // I could pop out two vars at same time and switch their numbers, do it like 20 times
+    for(let x=0;x<53;x++){
+      let one = Math.floor(Math.random() * 52);
+      let two = Math.floor(Math.random() * 52);
+      // switch position of one with position of two
+      this.card_array[one]['position'] = two;
+      this.card_array[two]['position'] = one;
+      
+    }
+    return this;
+  }
+
+  dealCards(){
+    this.create_cards().shuffleCards();
+    return this.card_array;
+  }
+
+  deal(){
+    // check to see if there are enough cards in the deck to reset
+    if (this.card_array.length < 2){ this.dealCards()}
+    let rando = Math.floor(Math.random() * this.card_array.length);
+    return this.card_array.splice(rando,1);
+    
+  }
+
+  collect(card){
+    this.card_array.push(card);
+    return this;
+  }
+
+}
+
+class Player extends Deck{
+
+  // should have a hand, able to take a card deck.deal, discard a card
+
+  constructor(name){
+    super();
+    this.name = name;
+    this.hand = [];
+    this.hand_value = 0;
+    super.dealCards();
+  }
+
+  takeCard(){
+    var c = super.deal();
+    var card = c[0];
+    this.hand.push(card);
+    //console.log(card);
+    let increase = 0;
+    if (card.num === "j"){
+        increase = 11;
+    } else if (card.num === "q"){
+        increase = 12;
+    } else if (card.num === "k"){
+        increase = 13;
+    } else if (card.num === "1"){
+        increase = 14;
+    } else {
+        increase = parseInt(card.num);
+    }
+      this.hand_value = this.hand_value + increase;
+    return this;
+  }
+
+  returnCard(card){
+    super.collect(card[0]);
+    return this;
+  }
+  reset(){
+    this.hand = [];
+    this.hand_value = 0;
+    // put cards back into the card array
+    for (card in this.hand){
+      super.collect(card);
+    }
+    return this;
+  }
+}
+
+var player = new Player("bob");
+
+document.getElementById("reset").onclick=reset;
+
+function reset(){
+
+  player.reset();
+  var x = document.getElementById("dealt");
+  x.innerHTML = "";
+
+}
+
+document.getElementById("deal").onclick=deal;
+
+function deal(){
+  
+  var x = document.getElementById("dealt");
+  x.innerHTML = "";
+  
+  player.takeCard();
+  //player.handValue();
+  console.log(player.hand_value);
+  if (player.hand_value > 20){ 
+    console.log("bust");
+  }
+  for (var i=0;i<player.hand.length;i++){
+    let img = document.createElement("img");
+    img.src = `${player.hand[i].suite}${player.hand[i].num}.png`;
+    x.appendChild(img);
+  }
+  
+}
+
+
+
+</script>
+
+</body>
+
+
+</html>
